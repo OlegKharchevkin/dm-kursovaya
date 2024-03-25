@@ -1,13 +1,13 @@
-# Hamiltonian cycles finder
+# Hamiltonian cycle finder
 
 ## Описание
 
-Ищет [Гамильтоновы циклы](https://ru.wikipedia.org/wiki/Гамильтонов_граф "Wikipedia") в графе в формате [Graphoid2021](https://github.com/Anton00756/Graphoid--2021 "Github").
+Ищет [Гамильтоновы циклы](https://ru.wikipedia.org/wiki/Гамильтонов_граф "Wikipedia") в графах в формате [Graphoid2021](https://github.com/Anton00756/Graphoid--2021 "Github").
 
 ## Использование
 
 ```bash
-hamiltonian_cycles.exe input.txt
+hamiltonian_cycle.exe input.txt
 ```
 Работает с ориентированными и неориентированными обыными графами.
 Дополнительные параметры получает через поле `<text>`
@@ -15,5 +15,11 @@ hamiltonian_cycles.exe input.txt
 ```
 <text>
 цвет подсетки цикла (по умолчанию red)
-оставить ли рёбра вне цикла? (по умолчанию true)
+удалять ли рёбра вне цикла? (по умолчанию false)
+```
+
+## Сборка  
+
+```bash
+pyinstaller make/make.spec
 ```
