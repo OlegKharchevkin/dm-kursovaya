@@ -27,6 +27,8 @@ class G_parser():
                     case _:
                         self.__tags[tag] = {}
             else:
+                if line.strip() == "":
+                    continue
                 match tag:
                     case "Text":
                         self.__tags[tag] += line
@@ -41,6 +43,14 @@ class G_parser():
                         self.__tags[tag][(int(start), int(end))] = color
                     case _:
                         pass
+        if "Text" not in self.__tags:
+            self.__tags["Text"] = ""
+        if "Vertex_Colors" not in self.__tags:
+            self.__tags["Vertex_Colors"] = {}
+        if "Positions" not in self.__tags:
+            self.__tags["Positions"] = {}
+        if "Rib_Colors" not in self.__tags:
+            self.__tags["Rib_Colors"] = {}
 
     def get_size(self) -> int:
         return self.__size
@@ -68,22 +78,23 @@ class G_writer():
 
     def __write_tags(self) -> None:
         for tag in self.__tags:
-            self.__f.write(f"<{tag}>\n")
-            match tag:
-                case "Text":
-                    self.__f.write(self.__tags[tag])
-                case "Vertex_Colors":
-                    for index, color in self.__tags[tag].items():
-                        self.__f.write(f"{index} {color}\n")
-                case "Positions":
-                    for index, position in self.__tags[tag].items():
-                        self.__f.write(
-                            f"{index} {position[0]} {position[1]}\n")
-                case "Rib_Colors":
-                    for start, end, color in self.__tags[tag].items():
-                        self.__f.write(f"{start} {end} {color}\n")
-                case _:
-                    pass
+            if len(self.__tags[tag]) != 0:
+                self.__f.write(f"<{tag}>\n")
+                match tag:
+                    case "Text":
+                        self.__f.write(self.__tags[tag])
+                    case "Vertex_Colors":
+                        for index, color in self.__tags[tag].items():
+                            self.__f.write(f"{index} {color}\n")
+                    case "Positions":
+                        for index, position in self.__tags[tag].items():
+                            self.__f.write(
+                                f"{index} {position[0]} {position[1]}\n")
+                    case "Rib_Colors":
+                        for (start, end), color in self.__tags[tag].items():
+                            self.__f.write(f"{start} {end} {color}\n")
+                    case _:
+                        pass
 
     def write(self) -> None:
         self.__write_size()

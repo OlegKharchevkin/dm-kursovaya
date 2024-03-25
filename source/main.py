@@ -11,7 +11,7 @@ def main() -> None:
     parser.add_argument("file", type=str)
     args = parser.parse_args()
     file = args.file
-    graph = Graph(file)
+    graph = Graph()
     with open(file) as f:
         graph.read(f)
     text = graph.get_text()

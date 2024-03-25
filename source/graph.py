@@ -1,5 +1,4 @@
 from io import TextIOWrapper
-from typing import Generator
 from graphoid_parser import G_parser, G_writer
 
 
@@ -25,6 +24,7 @@ class Graph:
 
     def write(self, f: TextIOWrapper) -> None:
         writer = G_writer(f, self.__size, self.__matrix, self.__tags)
+        writer.write()
 
     def set_vertex_color(self, index: int, color: str) -> None:
         self.__tags["Vertex_Colors"][index] = color
@@ -49,15 +49,18 @@ class Graph:
 
     def delete_rib(self, start: int, end: int) -> None:
         self.__matrix[start][end] = 0
-        self.__tags["Rib_Colors"].pop((start, end))
+        if (start, end) in self.__tags["Rib_Colors"]:
+            self.__tags["Rib_Colors"].pop((start, end))
 
     def delete_vertex(self, index: int) -> None:
         self.__matrix.pop(index)
         for row in self.__matrix:
             row.pop(index)
         self.__size -= 1
-        self.__tags["Positions"].pop(index)
-        self.__tags["Vertex_Colors"].pop(index)
+        if index in self.__tags["Positions"]:
+            self.__tags["Positions"].pop(index)
+        if index in self.__tags["Vertex_Colors"]:
+            self.__tags["Vertex_Colors"].pop(index)
         self.__tags["Rib_Colors"] = {k: v for k, v in self.__tags["Rib_Colors"].items(
         ) if k[0] != index and k[1] != index}
 
@@ -92,12 +95,12 @@ class Graph:
             return 0, 0
         return self.__tags["Positions"][index]
 
-    def get_ribs(self) -> Generator[tuple[int, int]]:
+    def get_ribs(self):
         for start in range(self.__size):
             for end in range(self.__size):
                 if self.is_connected(start, end):
                     yield start, end
 
-    def get_vertices(self) -> Generator[int]:
+    def get_vertices(self):
         for index in range(self.__size):
             yield index
