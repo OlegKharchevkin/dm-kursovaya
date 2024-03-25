@@ -1,4 +1,3 @@
-from typing import Generator
 from graph import Graph
 
 
@@ -33,6 +32,6 @@ def del_ribs_not_in_cycle(graph: Graph, cycle: list[int]) -> None:
             graph.delete_rib(rib[0], rib[1])
 
 
-def ribs_from_cycle(cycle: list[int]) -> Generator[tuple[int, int]]:
+def ribs_from_cycle(cycle: list[int]):
     for i in range(len(cycle)):
         yield cycle[i - 1], cycle[i]
