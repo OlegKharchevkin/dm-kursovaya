@@ -21,15 +21,21 @@ def hamiltonian_cycle(graph: Graph) -> list[int]:
 
 
 def color_cycle(graph: Graph, cycle: list[int], rib_color: str) -> None:
+    nonoriented = graph.is_nonoriented()
     for i in ribs_from_cycle(cycle):
         graph.set_rib_color(i[0], i[1], rib_color)
+        if nonoriented:
+            graph.set_rib_color(i[1], i[0], rib_color)
 
 
 def del_ribs_not_in_cycle(graph: Graph, cycle: list[int]) -> None:
+    nonoriented = graph.is_nonoriented()
     ribs = list(ribs_from_cycle(cycle))
     for rib in graph.get_ribs():
         if rib not in ribs:
             graph.delete_rib(rib[0], rib[1])
+            if nonoriented and rib[::-1] not in ribs:
+                graph.delete_rib(rib[1], rib[0])
 
 
 def ribs_from_cycle(cycle: list[int]):

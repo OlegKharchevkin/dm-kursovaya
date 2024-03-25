@@ -32,6 +32,14 @@ class Graph:
     def set_rib_color(self, start: int, end: int, color: str) -> None:
         self.__tags["Rib_Colors"][(start, end)] = color
 
+    def is_nonoriented(self) -> bool:
+        temp = list(map(list, zip(*self.__matrix)))
+        for i in range(self.__size):
+            for j in range(self.__size):
+                if self.__matrix[i][j] != temp[i][j]:
+                    return False
+        return True
+
     def add_rib(self, start: int, end: int, length: int = 1, color: str = "") -> None:
         self.__matrix[start][end] = length
         if color != "":
