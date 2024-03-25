@@ -8,45 +8,84 @@ class G_parser():
         self.__read_tags(f)
 
     def __read_size(self, f: TextIOWrapper) -> None:
-        self.size = int(f.readline())
+        self.__size = int(f.readline())
 
     def __read_matrix(self, f: TextIOWrapper) -> None:
-        self.matrix = []
-        for _ in range(self.size):
-            self.matrix.append(list(map(int, f.readline().split())))
+        self.__matrix = []
+        for _ in range(self.__size):
+            self.__matrix.append(list(map(int, f.readline().split())))
 
     def __read_tags(self, f: TextIOWrapper) -> None:
-        self.tags = {}
+        self.__tags = {}
         tag = ""
         for line in f.readlines():
             if line.startswith("<"):
                 tag = line.strip().replace("<", "").replace(">", "")
                 match tag:
                     case "Text":
-                        self.tags[tag] = ""
+                        self.__tags[tag] = ""
                     case _:
-                        self.tags[tag] = {}
+                        self.__tags[tag] = {}
             else:
                 match tag:
                     case "Text":
-                        self.tags[tag] += line
+                        self.__tags[tag] += line
                     case "Vertex_Colors":
                         index, color = line.split()
-                        self.tags[tag][int(index)] = color
+                        self.__tags[tag][int(index)] = color
                     case "Positions":
                         index, x, y = map(int, line.split())
-                        self.tags[tag][index] = (x, y)
+                        self.__tags[tag][index] = (x, y)
                     case "Rib_Colors":
-                        index1, index2, color = line.split()
-                        self.tags[tag][(int(index1), int(index2))] = color
+                        start, end, color = line.split()
+                        self.__tags[tag][(int(start), int(end))] = color
                     case _:
                         pass
 
     def get_size(self) -> int:
-        return self.size
+        return self.__size
 
     def get_matrix(self) -> list[list[int]]:
-        return self.matrix
+        return self.__matrix
 
     def get_tags(self) -> dict:
-        return self.tags.copy()
+        return self.__tags
+
+
+class G_writer():
+    def __init__(self, f: TextIOWrapper, size: int, matrix: list[list[int]], tags: dict) -> None:
+        self.__f = f
+        self.__size = size
+        self.__matrix = matrix
+        self.__tags = tags
+
+    def __write_size(self) -> None:
+        self.__f.write(f"{self.__size}\n")
+
+    def __write_matrix(self) -> None:
+        for row in self.__matrix:
+            self.__f.write(" ".join(map(str, row)) + "\n")
+
+    def __write_tags(self) -> None:
+        for tag in self.__tags:
+            self.__f.write(f"<{tag}>\n")
+            match tag:
+                case "Text":
+                    self.__f.write(self.__tags[tag])
+                case "Vertex_Colors":
+                    for index, color in self.__tags[tag].items():
+                        self.__f.write(f"{index} {color}\n")
+                case "Positions":
+                    for index, position in self.__tags[tag].items():
+                        self.__f.write(
+                            f"{index} {position[0]} {position[1]}\n")
+                case "Rib_Colors":
+                    for start, end, color in self.__tags[tag].items():
+                        self.__f.write(f"{start} {end} {color}\n")
+                case _:
+                    pass
+
+    def write(self) -> None:
+        self.__write_size()
+        self.__write_matrix()
+        self.__write_tags()
