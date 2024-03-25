@@ -34,7 +34,7 @@ def del_ribs_not_in_cycle(graph: Graph, cycle: list[int]) -> None:
     for rib in graph.get_ribs():
         if rib not in ribs:
             graph.delete_rib(rib[0], rib[1])
-            if nonoriented:
+            if nonoriented and rib[::-1] not in ribs:
                 graph.delete_rib(rib[1], rib[0])
 
 
