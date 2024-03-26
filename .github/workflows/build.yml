@@ -1,0 +1,22 @@
+name: Build
+
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - 'master'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/install-python@v4
+        with:
+          python-version: '3.8'
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller
+          pyinstaller .\make\make.spec
