@@ -1,22 +1,26 @@
 from graph import Graph
 
 
-def DFS_hamiltonian(path: list[int], graph: Graph, vertex: int) -> None:
+def DFS_hamiltonian(path: list[int], graph: Graph, vertex: int, index: int) -> int:
     path.append(vertex)
     if len(path) == graph.get_size() and graph.is_connected(vertex, path[0]):
-        return
+        if index != 0:
+            path.pop()
+        return index - 1
+
     for i in graph.get_vertices():
         if graph.is_connected(vertex, i) and i not in path:
-            DFS_hamiltonian(path, graph, i)
-            if len(path) == graph.get_size():
-                return
+            pass
+            index = DFS_hamiltonian(path, graph, i, index)
+            if len(path) == graph.get_size() and index == -1:
+                return -1
     path.pop()
-    return
+    return index
 
 
-def hamiltonian_cycle(graph: Graph) -> list[int]:
+def hamiltonian_cycle(graph: Graph, index: int) -> list[int]:
     cycle = []
-    DFS_hamiltonian(cycle, graph, 0)
+    DFS_hamiltonian(cycle, graph, 0, index)
     return cycle
 
 
@@ -41,3 +45,8 @@ def del_ribs_not_in_cycle(graph: Graph, cycle: list[int]) -> None:
 def ribs_from_cycle(cycle: list[int]):
     for i in range(len(cycle)):
         yield cycle[i - 1], cycle[i]
+
+
+def clear_graph(graph: Graph, color: str) -> None:
+    for i in graph.get_ribs():
+        graph.set_rib_color(i[0], i[1], color)
