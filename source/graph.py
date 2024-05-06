@@ -3,7 +3,7 @@ from graphoid_parser import G_parser, G_writer
 
 
 class Graph:
-    def __init__(self, size: int, matrix: list[list[int]], tags: dict) -> None:
+    def __init__(self, size: int, matrix: "list[list[int]]", tags: dict) -> None:
         self.__size = size
         self.__matrix = matrix
         self.__tags = tags
@@ -45,7 +45,7 @@ class Graph:
         if color != "":
             self.set_rib_color(start, end, color)
 
-    def add_vertex(self, coords: tuple[int, int] = None, color: str = "") -> None:
+    def add_vertex(self, coords: "tuple[int, int]" = None, color: str = "") -> None:
         for row in self.__matrix:
             row.append(0)
         self.__matrix.append([0] * (self.__size + 1))
@@ -78,7 +78,7 @@ class Graph:
     def is_connected(self, start: int, end: int) -> bool:
         return self.__matrix[start][end] > 0
 
-    def get_matrix(self) -> list[list[int]]:
+    def get_matrix(self) -> "list[list[int]]":
         temp = [row.copy() for row in self.__matrix]
         return temp
 
@@ -98,7 +98,7 @@ class Graph:
             return ""
         return self.__tags["Vertex_Colors"][index]
 
-    def get_position(self, index: int) -> tuple[int, int]:
+    def get_position(self, index: int) -> "tuple[int, int]":
         if index not in self.__tags["Positions"]:
             return 0, 0
         return self.__tags["Positions"][index]

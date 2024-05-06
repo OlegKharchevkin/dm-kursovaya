@@ -38,24 +38,21 @@ def main() -> None:
     for line in text.splitlines():
         words = re.split(r'\s*=\s*', line)
         if len(words) == 2:
-            match words[0]:
-                case "del_ribs":
-                    if words[1] in true or words[1] in false:
-                        del_ribs = words[1] in true
-                case "color":
-                    if is_color(words[1]):
-                        color = words[1]
-                case "index":
-                    if words[1].isdigit():
-                        index = int(words[1])
-                case "clear_color":
-                    if is_color(words[1]):
-                        clear_color = words[1]
-                case "clear":
-                    if words[1] in true or words[1] in false:
-                        clear = words[1] in true
-                case _:
-                    pass
+            if words[0] == "del_ribs":
+                if words[1] in true or words[1] in false:
+                    del_ribs = words[1] in true
+            elif words[0] == "color":
+                if is_color(words[1]):
+                    color = words[1]
+            elif words[0] == "index":
+                if words[1].isdigit():
+                    index = int(words[1])
+            elif words[0] == "clear_color":
+                if is_color(words[1]):
+                    clear_color = words[1]
+            elif words[0] == "clear":
+                if words[1] in true or words[1] in false:
+                    clear = words[1] in true
     if clear:
         clear_graph(graph, clear_color)
     cycle = hamiltonian_cycle(graph, index)
