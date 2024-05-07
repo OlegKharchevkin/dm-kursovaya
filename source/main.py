@@ -26,10 +26,9 @@ def main() -> None:
     parser.add_argument("file", type=str)
     args = parser.parse_args()
     file = args.file
-    graph = Graph()
     with open(file) as f:
-        graph.read(f)
-    text = graph.get_text()
+        graph = Graph.form_file(f)
+    text = graph.text
     del_ribs = False
     color = colors[0]
     index = 0
