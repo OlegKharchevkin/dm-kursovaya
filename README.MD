@@ -23,6 +23,7 @@ clear_color = цвет рёбер чистого графа (по умолчан
 
 ## Сборка  
 
+
 ```bash
-pyinstaller make/make.spec
+./build.bat
 ```
