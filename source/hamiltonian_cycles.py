@@ -1,52 +1,46 @@
 from graph import Graph
+from ctypes import *
 
 
-def DFS_hamiltonian(path: list[int], graph: Graph, vertex: int, index: int) -> int:
-    path.append(vertex)
-    if len(path) == graph.get_size() and graph.is_connected(vertex, path[0]):
-        if index != 0:
-            path.pop()
-        return index - 1
-
-    for i in graph.get_vertices():
-        if graph.is_connected(vertex, i) and i not in path:
-            pass
-            index = DFS_hamiltonian(path, graph, i, index)
-            if len(path) == graph.get_size() and index == -1:
-                return -1
-    path.pop()
-    return index
+clib = CDLL("libinterface.dll")
 
 
-def hamiltonian_cycle(graph: Graph, index: int) -> list[int]:
-    cycle = []
-    DFS_hamiltonian(cycle, graph, 0, index)
-    return cycle
+def hamiltonian_cycle(graph: Graph, index: int) -> "list[int]":
+    matrix = graph.matrix
+    size = graph.size
+    cmatrix_t = (c_int * size) * size
+    cmatrix = cmatrix_t()
+    for row in graph.vertices:
+        for col in graph.vertices:
+            cmatrix[row][col] = matrix[row][col]
+    ccycle = clib.getHamiltonianCycles(cmatrix, size, index)
+
+    return [clib.pop(ccycle) for _ in range(clib.size(ccycle))]
 
 
-def color_cycle(graph: Graph, cycle: list[int], rib_color: str) -> None:
-    nonoriented = graph.is_nonoriented()
+def color_cycle(graph: Graph, cycle: "list[int]", rib_color: str) -> None:
+    nonoriented = graph.is_nonoriented
     for i in ribs_from_cycle(cycle):
-        graph.set_rib_color(i[0], i[1], rib_color)
+        graph.set_rib_color(*i, rib_color)
         if nonoriented:
-            graph.set_rib_color(i[1], i[0], rib_color)
+            graph.set_rib_color(*i[::-1], rib_color)
 
 
-def del_ribs_not_in_cycle(graph: Graph, cycle: list[int]) -> None:
-    nonoriented = graph.is_nonoriented()
+def del_ribs_not_in_cycle(graph: Graph, cycle: "list[int]") -> None:
+    nonoriented = graph.is_nonoriented
     ribs = list(ribs_from_cycle(cycle))
-    for rib in graph.get_ribs():
+    for rib in graph.ribs():
         if rib not in ribs:
-            graph.delete_rib(rib[0], rib[1])
+            graph.delete_rib(*rib)
             if nonoriented and rib[::-1] not in ribs:
-                graph.delete_rib(rib[1], rib[0])
+                graph.delete_rib(*rib[::-1])
 
 
-def ribs_from_cycle(cycle: list[int]):
+def ribs_from_cycle(cycle: "list[int]"):
     for i in range(len(cycle)):
         yield cycle[i - 1], cycle[i]
 
 
 def clear_graph(graph: Graph, color: str) -> None:
-    for i in graph.get_ribs():
+    for i in graph.ribs:
         graph.set_rib_color(i[0], i[1], color)
