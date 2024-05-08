@@ -6,15 +6,9 @@ clib = CDLL("libinterface.dll")
 
 
 def hamiltonian_cycle(graph: Graph, index: int) -> "list[int]":
-    matrix = graph.matrix
     size = graph.size
-    cmatrix_t = (c_int * size) * size
-    cmatrix = cmatrix_t()
-    for row in graph.vertices:
-        for col in graph.vertices:
-            cmatrix[row][col] = matrix[row][col]
-    ccycle = clib.getHamiltonianCycles(cmatrix, size, index)
-
+    matrix = graph.matrix.ctypes.data_as(c_int * size * size)
+    ccycle = clib.getHamiltonianCycles(matrix, size, index)
     return [clib.pop(ccycle) for _ in range(clib.size(ccycle))]
 
 

@@ -1,12 +1,20 @@
 from io import TextIOWrapper
+import numpy as np
 
 
 class Graph:
     @classmethod
-    def from_matrix(cls, matrix: "list[list[int]]" = [], tags: dict = {}) -> None:
+    def from_numpy(cls, matrix: "np.ndarray[np.int32]" = [], tags: dict = {}) -> None:
+        self = cls()
+        self.__size = matrix.shape[0]
+        self.__matrix = matrix.astype(np.int32)
+        self.__tags = tags
+
+    @classmethod
+    def from_list(cls, matrix: "list[list[int]]" = [], tags: dict = {}) -> None:
         self = cls()
         self.__size = len(matrix)
-        self.__matrix = matrix
+        self.__matrix = np.array(matrix, dtype=np.int32)
         self.__tags = tags
         return self
 
@@ -20,7 +28,7 @@ class Graph:
 
     def __init__(self) -> None:
         self.__size = 0
-        self.__matrix = []
+        self.__matrix = np.array([], dtype=np.int32)
         self.__tags = {}
 
     def write(self, f: TextIOWrapper) -> None:
@@ -36,12 +44,7 @@ class Graph:
 
     @property
     def is_nonoriented(self) -> bool:
-        temp = list(map(list, zip(*self.__matrix)))
-        for i in range(self.__size):
-            for j in range(self.__size):
-                if self.__matrix[i][j] != temp[i][j]:
-                    return False
-        return True
+        return self.__matrix == self.__matrix.T
 
     def add_rib(self, start: int, end: int, length: int = 1, color: str = "") -> None:
         self.__matrix[start][end] = length
@@ -49,9 +52,10 @@ class Graph:
             self.set_rib_color(start, end, color)
 
     def add_vertex(self, coords: "tuple[int, int]" = None, color: str = "") -> None:
-        for row in self.__matrix:
-            row.append(0)
-        self.__matrix.append([0] * (self.__size + 1))
+        new_matrix = np.zeros(
+            (self.__size + 1, self.__size + 1), dtype=np.int32)
+        new_matrix[:self.__size, :self.__size] = self.__matrix
+        self.__matrix = new_matrix
         self.__size += 1
         if coords is not None:
             self.__tags["Positions"][len(self.__tags["Positions"])] = coords
@@ -64,10 +68,13 @@ class Graph:
             self.__tags["Rib_Colors"].pop((start, end))
 
     def delete_vertex(self, index: int) -> None:
-        self.__matrix.pop(index)
-        for row in self.__matrix:
-            row.pop(index)
-        self.__size -= 1
+        new_matrix = np.zeros(
+            (self.__size - 1, self.__size - 1), dtype=np.int32)
+        new_matrix[:index, :index] = self.__matrix[:index, :index]
+        new_matrix[:index, index:] = self.__matrix[:index, index + 1:]
+        new_matrix[index:, :index] = self.__matrix[index + 1:, :index]
+        new_matrix[index:, index:] = self.__matrix[index + 1:, index + 1:]
+        self.__matrix = new_matrix
         if index in self.__tags["Positions"]:
             self.__tags["Positions"].pop(index)
         if index in self.__tags["Vertex_Colors"]:
@@ -83,9 +90,8 @@ class Graph:
         return self.__matrix[start][end] > 0
 
     @property
-    def matrix(self) -> "list[list[int]]":
-        temp = [row.copy() for row in self.__matrix]
-        return temp
+    def matrix(self) -> "np.ndarray":
+        return self.__matrix.copy()
 
     @property
     def text(self) -> str:
@@ -97,7 +103,7 @@ class Graph:
         return self.__tags["Rib_Colors"][(start, end)]
 
     def rib_length(self, start: int, end: int) -> int:
-        return self.__matrix[start][end]
+        return int(self.__matrix[start][end])
 
     def vertex_color(self, index: int) -> str:
         if index not in self.__tags["Vertex_Colors"]:
@@ -125,9 +131,9 @@ class Graph:
         self.__size = int(f.readline())
 
     def __read_matrix(self, f: TextIOWrapper) -> None:
-        self.__matrix = []
-        for _ in range(self.__size):
-            self.__matrix.append(list(map(int, f.readline().split())))
+        self.__matrix = np.zeros((self.__size, self.__size), dtype=np.int32)
+        for i in range(self.__size):
+            self.__matrix[i] = list(map(int, f.readline().split()))
 
     def __read_tags(self, f: TextIOWrapper) -> None:
         self.__tags = {}
@@ -167,8 +173,11 @@ class Graph:
         f.write(f"{self.__size}\n")
 
     def __write_matrix(self, f: TextIOWrapper) -> None:
-        for row in self.__matrix:
-            f.write(" ".join(map(str, row)) + "\n")
+        for i in range(self.__size):
+            for j in range(self.__size):
+                f.write(str(self.__matrix[i][j]) + " ")
+            f.write("\n")
+        f.write("\n")
 
     def __write_tags(self, f: TextIOWrapper) -> None:
         for tag in self.__tags:
