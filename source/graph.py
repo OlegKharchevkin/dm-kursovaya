@@ -44,7 +44,7 @@ class Graph:
 
     @property
     def is_nonoriented(self) -> bool:
-        return self.__matrix == self.__matrix.T
+        return (self.__matrix == self.__matrix.T).all()
 
     def add_rib(self, start: int, end: int, length: int = 1, color: str = "") -> None:
         self.__matrix[start][end] = length
@@ -177,7 +177,6 @@ class Graph:
             for j in range(self.__size):
                 f.write(str(self.__matrix[i][j]) + " ")
             f.write("\n")
-        f.write("\n")
 
     def __write_tags(self, f: TextIOWrapper) -> None:
         for tag in self.__tags:
