@@ -7,26 +7,24 @@ clib = CDLL("libinterface.dll")
 
 def hamiltonian_cycle(graph: Graph, index: int) -> "list[int]":
     size = graph.size
-    matrix = graph.matrix.ctypes.data_as(c_int * size * size)
+    matrix = graph.matrix.ctypes.data_as(POINTER(c_int * size * size))
     ccycle = clib.getHamiltonianCycles(matrix, size, index)
     return [clib.pop(ccycle) for _ in range(clib.size(ccycle))]
 
 
 def color_cycle(graph: Graph, cycle: "list[int]", rib_color: str) -> None:
-    nonoriented = graph.is_nonoriented
     for i in ribs_from_cycle(cycle):
         graph.set_rib_color(*i, rib_color)
-        if nonoriented:
+        if graph.is_nonoriented:
             graph.set_rib_color(*i[::-1], rib_color)
 
 
 def del_ribs_not_in_cycle(graph: Graph, cycle: "list[int]") -> None:
-    nonoriented = graph.is_nonoriented
     ribs = list(ribs_from_cycle(cycle))
     for rib in graph.ribs():
         if rib not in ribs:
             graph.delete_rib(*rib)
-            if nonoriented and rib[::-1] not in ribs:
+            if graph.is_nonoriented and rib[::-1] not in ribs:
                 graph.delete_rib(*rib[::-1])
 
 
